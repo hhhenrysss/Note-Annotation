@@ -1,0 +1,53 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.11.4",
+    "@material-ui/icons": "^4.11.2",
+    "@testing-library/jest-dom": "^5.12.0",
+    "@testing-library/react": "^11.2.6",
+    "@testing-library/user-event": "^12.8.3",
+    "axios": "^0.21.1",
+    "flow-bin": "^0.149.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-mde": "^11.4.0",
+    "react-pdf-highlighter": "^3.4.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "showdown": "^1.9.1",
+    "web-vitals": "^1.1.1"
+  },
+  "scripts": {
+    "start": "PORT=3006 react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      "last 1 chrome version"
+    ],
+    "development": [
+      "last 1 chrome version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.13.16",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.13.8",
+    "@babel/preset-env": "^7.13.15",
+    "@babel/preset-flow": "^7.13.13",
+    "@babel/preset-react": "^7.13.13",
+    "customize-cra": "^1.0.0",
+    "react-app-rewired": "^2.1.8",
+    "worker-loader": "^3.0.8"
+  },
+  "proxy": "http://localhost:3005"
+}
