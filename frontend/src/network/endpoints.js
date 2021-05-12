@@ -14,8 +14,8 @@ async function register(username, password, role) {
     return strip(results);
 }
 
-async function getDocuments() {
-    const results = await axios.get('/api/pdfs');
+async function getDocuments(username) {
+    const results = await axios.get('/api/pdfs', {params: {username}});
     return strip(results);
 }
 
@@ -24,9 +24,14 @@ async function modifyDocument(data) {
     return strip(results);
 }
 
+async function createDocument(doc) {
+    const results = await axios.post('/api/pdf/create', doc);
+    return strip(results);
+}
+
 async function getAllHighlights(id) {
     const results = await axios.get('/api/highlights', {params: {id}});
     return strip(results)
 }
 
-export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights}
+export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights, createDocument}

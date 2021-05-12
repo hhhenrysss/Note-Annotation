@@ -29,7 +29,11 @@ export function Login({onAuthenticated}) {
         if (!username || !password) {
             return;
         }
-        endpoints.login(username, password).then(() => onAuthenticated(username));
+        endpoints.login(username, password).then(user => {
+            if (user) {
+                onAuthenticated(user)
+            }
+        });
     }
     return (
         <BaseLayout title='Login' onRegisterClick={() => history.push('/register')}>
@@ -56,7 +60,11 @@ export function Register({onAuthenticated}) {
         if (!username || !password || !role) {
             return;
         }
-        endpoints.register(username, password, role).then(() => onAuthenticated(username));
+        endpoints.register(username, password, role).then(user => {
+            if (user) {
+                onAuthenticated(user)
+            }
+        });
     }
     return (
         <BaseLayout title='Register'>

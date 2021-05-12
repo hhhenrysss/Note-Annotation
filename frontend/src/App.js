@@ -32,17 +32,17 @@ function ProtectedRoute({username, path, defined, notDefined}) {
 }
 
 function App() {
-    const [username, setUsername] = useState(null);
+    const [user, setUser] = useState({});
     return (
         <MuiThemeProvider theme={theme}>
             <Router>
-                <ProtectedRoute username={username} path={'/'} defined={<Redirect to={'/pdfs'}/>}
-                                notDefined={<Login onAuthenticated={setUsername}/>}/>
-                <ProtectedRoute username={username} path={'/register'} defined={<Redirect to={'/pdfs'}/>}
-                                notDefined={<Register onAuthenticated={setUsername}/>}/>
-                <ProtectedRoute username={username} path={'/pdfs'} defined={<DocumentSpace username={username}/>}
+                <ProtectedRoute username={user.username} path={'/'} defined={<Redirect to={'/pdfs'}/>}
+                                notDefined={<Login onAuthenticated={setUser}/>}/>
+                <ProtectedRoute username={user.username} path={'/register'} defined={<Redirect to={'/pdfs'}/>}
+                                notDefined={<Register onAuthenticated={setUser}/>}/>
+                <ProtectedRoute username={user.username} path={'/pdfs'} defined={<DocumentSpace username={user.username}/>}
                                 notDefined={<Redirect to={'/'}/>}/>
-                <ProtectedRoute username={username} path={'/pdf'} defined={<DocumentViewer username={username}/>}
+                <ProtectedRoute username={user.username} path={'/pdf'} defined={<DocumentViewer username={user.username}/>}
                                 notDefined={<Redirect to={'/'}/>}/>
             </Router>
         </MuiThemeProvider>
