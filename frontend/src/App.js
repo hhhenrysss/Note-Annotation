@@ -1,14 +1,13 @@
-import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom';
+import {BrowserRouter as Router, Redirect, Route} from 'react-router-dom';
 
 
 import './App.css';
-import {Login} from "./components/authentication";
-import {PDFViewer} from "./components/pdf-viewer";
+import {Login, Register} from "./components/authentication";
 import {useState} from "react";
 import {DocumentSpace} from "./components/document-space";
-import {prettyDOM} from "@testing-library/react";
 import {createMuiTheme, MuiThemeProvider} from "@material-ui/core";
 import {blue, blueGrey} from "@material-ui/core/colors";
+import {DocumentViewer} from "./components/document-viewer";
 
 const theme = createMuiTheme({
     palette: {
@@ -24,31 +23,27 @@ const theme = createMuiTheme({
     }
 })
 
+function ProtectedRoute({username, path, defined, notDefined}) {
+    return (
+        <Route exact path={path}>
+            {username ? (defined) : (notDefined)}
+        </Route>
+    )
+}
+
 function App() {
     const [username, setUsername] = useState(null);
     return (
         <MuiThemeProvider theme={theme}>
             <Router>
-                <Route exact path='/'>
-                    {() => {
-                        if (username) {
-                            return <Redirect to={'/pdf'}/>
-                        } else {
-                            return <Login onAuthenticated={setUsername}/>
-                        }
-                    }}
-                </Route>
-                <Route exact path='/pdf'>
-                    {
-                        () => {
-                            if (username) {
-                                return <DocumentSpace username={username}/>;
-                            } else {
-                                return <Redirect to={'/'}/>
-                            }
-                        }
-                    }
-                </Route>
+                <ProtectedRoute username={username} path={'/'} defined={<Redirect to={'/pdfs'}/>}
+                                notDefined={<Login onAuthenticated={setUsername}/>}/>
+                <ProtectedRoute username={username} path={'/register'} defined={<Redirect to={'/pdfs'}/>}
+                                notDefined={<Register onAuthenticated={setUsername}/>}/>
+                <ProtectedRoute username={username} path={'/pdfs'} defined={<DocumentSpace username={username}/>}
+                                notDefined={<Redirect to={'/'}/>}/>
+                <ProtectedRoute username={username} path={'/pdf'} defined={<DocumentViewer username={username}/>}
+                                notDefined={<Redirect to={'/'}/>}/>
             </Router>
         </MuiThemeProvider>
     );

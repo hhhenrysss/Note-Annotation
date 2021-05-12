@@ -1,18 +1,32 @@
 import axios from 'axios';
 
-async function login(username, password) {
-    const results = await axios.post('/api/login', {username, password});
-    return results.data.data;
+function strip(result) {
+    return result.data.data;
 }
 
-async function getDocument() {
-    const results = await axios.get('/api/pdf');
-    return results.data.data;
+async function login(username, password) {
+    const results = await axios.post('/api/login', {username, password});
+    return strip(results);
+}
+
+async function register(username, password, role) {
+    const results = await axios.post('/api/register', {username, password, role});
+    return strip(results);
+}
+
+async function getDocuments() {
+    const results = await axios.get('/api/pdfs');
+    return strip(results);
 }
 
 async function modifyDocument(data) {
     const results = await axios.post('/api/pdf/edit', data);
-    return results.data.data;
+    return strip(results);
 }
 
-export const endpoints = {login, getDocument, modifyDocument}
+async function getAllHighlights(id) {
+    const results = await axios.get('/api/highlights', {params: {id}});
+    return strip(results)
+}
+
+export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights}
