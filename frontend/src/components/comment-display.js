@@ -1,11 +1,11 @@
 import {markdownConverter} from "../utils/markdown";
 
-export function CommentDisplay({title, username, content}) {
+export function CommentMinimizedDisplay({title, username, content, onClick}) {
     return (
-        <div style={{padding: 5, borderBottom: '1px solid #c7c7c7'}}>
-            <h6 style={{fontSize: 15, margin: 0, marginBottom: 10}}>{title}</h6>
-            <p style={{fontSize: 12, color: 'gray', marginBottom: 10, margin: 0, padding: '5px 0'}}>{username}</p>
-            <div style={{fontSize: 12, margin: 0, padding: '5px 0'}} dangerouslySetInnerHTML={{__html: markdownConverter.makeHtml(content)}}/>
+        <div className={'hover-card'} onClick={onClick} style={{padding: 10, borderBottom: '1px solid #c7c7c7', cursor: "pointer"}}>
+            <h6 style={{fontSize: 15, margin: '5px 0'}}>{title}</h6>
+            <p style={{fontSize: 12, color: 'gray', marginBottom: 5, margin: 0, padding: '5px 0'}}>{username}</p>
+            <div style={{fontSize: 12, margin: 0, padding: 0}} dangerouslySetInnerHTML={{__html: markdownConverter.makeHtml(content)}}/>
         </div>
     )
 }

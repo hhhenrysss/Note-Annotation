@@ -13,7 +13,7 @@ const resetHash = () => {
     document.location.hash = "";
 };
 
-export function PDFViewer({url, highlights, onAddHighlight}) {
+export function PDFViewer({url, highlights, onAddHighlight, username, existingDocInfo}) {
     return (
         <div style={{width: '100%', height: '100%', position: 'relative'}}>
             <PdfLoader url={url} beforeLoad={<div>Loading</div>}>
@@ -33,10 +33,11 @@ export function PDFViewer({url, highlights, onAddHighlight}) {
                             <CommentTip
                                 onOpen={transformSelection}
                                 onAdd={comment => {
-                                    console.log({content, position, comment})
                                     onAddHighlight({selectedText: content, position, comment});
                                     hideTipAndSelection();
                                 }}
+                                username={username}
+                                existingDocInfo={existingDocInfo}
                             />
                         )}
                         highlightTransform={(

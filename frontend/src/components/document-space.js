@@ -76,10 +76,10 @@ function AppHeader({username, onAddDocument}) {
     )
 }
 
-function DocumentCard({info}) {
+function DocumentCard({info, existingDocInfo}) {
     const history = useHistory();
     const onNavigate = () => {
-        history.push('/pdf', info)
+        history.push('/pdf', {selectedDoc: info, existingDocInfo})
     }
     return (
         <Card style={{display: "flex", flexDirection: 'column', justifyContent: "space-between", minHeight: 220}}>
@@ -106,7 +106,7 @@ export function DocumentSpace({username}) {
         <div style={{width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column'}}>
             <AppHeader username={username} onAddDocument={onAddDocument}/>
             <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridGap: 15, padding: 15}}>
-                {documents.map(d => <DocumentCard key={d.id} info={d}/>)}
+                {documents.map(d => <DocumentCard key={d.id} info={d} existingDocInfo={documents.map(({name, id}) => ({name, id}))}/>)}
             </div>
         </div>
     )

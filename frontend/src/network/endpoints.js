@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {Button} from "@material-ui/core";
 
 function strip(result) {
     return result.data.data;
@@ -29,9 +30,15 @@ async function createDocument(doc) {
     return strip(results);
 }
 
-async function getAllHighlights(id) {
-    const results = await axios.get('/api/highlights', {params: {id}});
+async function getAllHighlights(id, username) {
+    const results = await axios.get('/api/highlights', {params: {id, username}});
     return strip(results)
 }
 
-export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights, createDocument}
+async function addHighlight(highlight, comment, externalDocs) {
+    const results = await axios.post('/api/highlight/add', {highlight, comment, externalDocs});
+    return strip(results);
+}
+
+export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights, createDocument,
+    addHighlight,}

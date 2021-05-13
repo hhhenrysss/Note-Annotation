@@ -1,30 +1,30 @@
-import {
-    Button,
-    Dialog,
-    FormControl,
-    FormControlLabel,
-    FormLabel,
-    IconButton,
-    Radio,
-    RadioGroup,
-    TextField
-} from "@material-ui/core";
+import {Button, Dialog, IconButton, TextField} from "@material-ui/core";
 import {PDFViewer} from "./pdf-viewer";
 import {useEffect, useState} from "react";
 import {endpoints} from "../network/endpoints";
-import {CommentDisplay} from "./comment-display";
+import {CommentMinimizedDisplay} from "./comment-display";
 import {InfoOutlined, SettingsOutlined} from "@material-ui/icons";
 import {blue} from "@material-ui/core/colors";
 import {useHistory} from "react-router-dom";
+import { v4 as uuidv4 } from 'uuid';
+
 
 function AppHeader({username, document, onUpdateDocument}) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     return (
         <>
             <div style={{background: 'black', width: '100%', display: 'flex', alignItems: 'center'}}>
-                <h2 style={{color: 'white', fontSize: 18, padding: '5px 15px', margin: 0, fontWeight: 500}}>Document View</h2>
-                <IconButton style={{marginLeft: 'auto'}} onClick={() => setIsDialogOpen(true)}><InfoOutlined style={{color: 'white'}}/></IconButton>
-                <Button style={{ color: '#fff1ff', textTransform: 'none', background: blue['700'], height: '100%', borderRadius: 0}}>{username}</Button>
+                <h2 style={{color: 'white', fontSize: 18, padding: '5px 15px', margin: 0, fontWeight: 500}}>Document
+                    View</h2>
+                <IconButton style={{marginLeft: 'auto'}} onClick={() => setIsDialogOpen(true)}><InfoOutlined
+                    style={{color: 'white'}}/></IconButton>
+                <Button style={{
+                    color: '#fff1ff',
+                    textTransform: 'none',
+                    background: blue['700'],
+                    height: '100%',
+                    borderRadius: 0
+                }}>{username}</Button>
             </div>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DocumentInfo info={document} onUpdateInfo={onUpdateDocument}/>
@@ -55,7 +55,8 @@ function DocumentInfo({info, onUpdateInfo}) {
             </div>
             <div style={{display: 'flex', flexDirection: 'row'}}>
                 <p style={{width: 150}}><strong>Document Name</strong></p>
-                {mode === 'edit' ? <TextField value={documentName} onChange={e => setDocumentName(e.target.value)}/> : <p>{documentName}</p>}
+                {mode === 'edit' ? <TextField value={documentName} onChange={e => setDocumentName(e.target.value)}/> :
+                    <p>{documentName}</p>}
             </div>
             <div style={{display: 'flex', flexDirection: 'row'}}>
                 <p style={{width: 150}}><strong>Author</strong></p>
@@ -70,19 +71,67 @@ function DocumentInfo({info, onUpdateInfo}) {
 }
 
 export function DocumentViewer({username}) {
-    const [document, setDocument] = useState(useHistory().location.state);
+    const {selectedDoc, existingDocInfo} = useHistory().location.state
+    const [document, setDocument] = useState(selectedDoc);
     const [values, setValues] = useState({});
     const [filteredHighlights, setFilteredHighlights] = useState([]);
     const [isSettingOpen, setIsSettingOpen] = useState(false);
     const [highlightsFilter, setHighlightsFilter] = useState({author: '', role: '', currentUser: true})
-    const addHighlight = highlight => {
-        setFilteredHighlights(old => [...old, highlight])
+    const [selectedHighlight, setSelectedHighlight] = useState(null);
+    const addHighlight = combined => {
+        console.log('combined', combined)
+        const time = Date.now()
+        const comment = {
+            id: `comment-${uuidv4().toString()}`,
+            content: combined.comment.content,
+            title: combined.comment.title,
+            access: combined.comment.access,
+            replies: [],
+            author: username,
+            linkedDocuments: combined.comment.links.map(l => l.id)
+        }
+        const highlight = {
+            selectedText: combined.selectedText,
+            position: combined.position,
+            id: `highlight-${uuidv4().toString()}`,
+            documentId: document.id,
+            author: username,
+            commentId: comment.id,
+            upvotes: 0,
+            access: comment.access
+        }
+        const externalLinks = [];
+        for (const link of combined.comment.links) {
+            if (link.isExternal) {
+                externalLinks.push({
+                    url: link.data.url,
+                    name: link.name,
+                    creationDate: time,
+                    author: username,
+                    id: link.id,
+                    lastUpdatedDate: time
+                })
+            }
+        }
+        endpoints.addHighlight(highlight, comment, externalLinks).then(({highlight, comment, externalDocs}) => {
+            setValues(old => {
+                const newValue = {...old};
+                newValue.highlights = [...newValue.highlights, highlight];
+                newValue.comments = {...newValue.comments, [comment.id]: comment}
+                newValue.linkedExternalResources = {...newValue.linkedExternalResources};
+                for (const d of externalDocs) {
+                    newValue.linkedExternalResources[d.id] = d
+                }
+                return newValue
+            })
+            setFilteredHighlights(old => [...old, highlight]);
+        })
     };
     useEffect(() => {
         if (!document) {
             return
         }
-        endpoints.getAllHighlights(document.id).then(val => {
+        endpoints.getAllHighlights(document.id, username).then(val => {
             setValues(val);
             setFilteredHighlights(val.highlights)
         })
@@ -93,21 +142,35 @@ export function DocumentViewer({username}) {
             <div style={{display: 'flex', height: '100%'}}>
                 {document ? (
                     <>
-                        <PDFViewer highlights={filteredHighlights} url={document.url} onAddHighlight={addHighlight}/>
-                        <div style={{width: 'calc(40% - 1px)', padding: 10, borderLeft: '1px solid gray', background: '#fafafa'}}>
-                            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-                                <h1 style={{fontSize: 25, fontWeight: 500, margin: 0}}>Comments</h1>
-                                <IconButton style={{marginLeft: 'auto'}} onClick={() => setIsSettingOpen(s => !s)}><SettingsOutlined style={{color: 'black'}}/></IconButton>
+                        <PDFViewer existingDocInfo={existingDocInfo} username={username} highlights={filteredHighlights}
+                                   url={document.url} onAddHighlight={addHighlight}/>
+                        <div style={{
+                            width: 'calc(40% - 1px)',
+                            borderLeft: '1px solid gray',
+                        }}>
+                            <div style={{padding: 10, background: '#e1dfdd'}}>
+                                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                                    <h1 style={{fontSize: 25, fontWeight: 500, margin: 0}}>Highlights</h1>
+                                    <IconButton style={{marginLeft: 'auto'}}
+                                                onClick={() => setIsSettingOpen(s => !s)}><SettingsOutlined
+                                        style={{color: 'black'}}/></IconButton>
+                                </div>
                             </div>
-                            <div>
+                            <div style={{padding: 10}}>
+                                {filteredHighlights.map(h => {
+                                    const comment = values.comments[h.commentId]
+                                    return (
+                                        <CommentMinimizedDisplay
+                                            key={h.id}
+                                            username={comment.author}
+                                            title={comment.title}
+                                            content={comment.content}
+                                            onClick={() => setSelectedHighlight(h)}
+                                        />
+                                    )
+                                })}
+                            </div>
 
-                            </div>
-                            <hr/>
-                            {filteredHighlights.map(c => <CommentDisplay
-                                username={c.comment.username ?? username}
-                                title={c.comment.title}
-                                content={c.comment.content}
-                            />)}
                         </div>
                     </>
                 ) : (
