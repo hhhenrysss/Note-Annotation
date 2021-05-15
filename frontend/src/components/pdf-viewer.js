@@ -6,6 +6,7 @@ import PDFWorker from "worker-loader!pdfjs-dist/lib/pdf.worker";
 
 import {useCallback, useState} from "react";
 import {CommentTip} from "./comment-tip";
+import {CircularProgress} from "@material-ui/core";
 
 setPdfWorker(PDFWorker);
 
@@ -13,10 +14,18 @@ const resetHash = () => {
     document.location.hash = "";
 };
 
+function LoadingIndicator() {
+    return (
+        <div style={{display: 'flex', justifyContent: "center", alignItems: "center", height: '100%'}}>
+            <CircularProgress />
+        </div>
+    )
+}
+
 export function PDFViewer({url, highlights, onAddHighlight, username, existingDocInfo}) {
     return (
         <div style={{width: '100%', height: '100%', position: 'relative'}}>
-            <PdfLoader url={url} beforeLoad={<div>Loading</div>}>
+            <PdfLoader url={url} beforeLoad={<LoadingIndicator/>}>
                 {pdfDocument => (
                     <PdfHighlighter
                         pdfDocument={pdfDocument}
@@ -74,7 +83,7 @@ export function PDFViewer({url, highlights, onAddHighlight, username, existingDo
 
                             return (
                                 <Popup
-                                    popupContent={<div>This is popup</div>}
+                                    popupContent={<div/>}
                                     onMouseOver={popupContent =>
                                         setTip(highlight, highlight => popupContent)
                                     }

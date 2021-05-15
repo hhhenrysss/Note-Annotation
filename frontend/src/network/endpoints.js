@@ -40,5 +40,10 @@ async function addHighlight(highlight, comment, externalDocs) {
     return strip(results);
 }
 
+async function upvoteHighlight(id, isCancel) {
+    const results = await axios.post('/api/highlight/upvote', {id, isCancel});
+    return strip(results);
+}
+
 export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights, createDocument,
-    addHighlight,}
+    addHighlight, upvoteHighlight}

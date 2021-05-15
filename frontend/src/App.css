@@ -10,3 +10,33 @@ html, body, #root {
     box-shadow: 0 6.4px 14.4px 0 rgb(0 0 0 / 13%), 0 1.2px 3.6px 0 rgb(0 0 0 / 11%);
     transition: all 0.1s linear;
 }
+
+code {
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.page-peel {
+    position: relative;
+    box-shadow: 0 25px 25px -35px rgba(0,0,0,0.25); /* this just adds a touch of shadow to the bottom of the page */
+}
+.page-peel::before,
+.page-peel::after {
+    content: "";
+    position: absolute;
+    top: 90%; /* may have to change the top for a taller page */
+    bottom: 25px; /* may have to change the bottom for a taller page */
+    box-shadow: 0 10px 15px rgba(0,0,0,0.25); /* this is for the curled page corners */
+    z-index: -1;
+}
+/* left bottom corner shadow */
+.page-peel::before {
+    left: 5px;
+    right: 50px;
+    transform: rotate(-2deg); /* may have to change the degrees rotated for a wider page */
+}
+/* right bottom corner shadow */
+.page-peel::after {
+    left: 50px;
+    right: 5px;
+    transform: rotate(2deg); /* may have to change the degrees rotated for a wider page */
+}

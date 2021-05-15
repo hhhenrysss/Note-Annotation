@@ -42,7 +42,7 @@ function App() {
                                 notDefined={<Register onAuthenticated={setUser}/>}/>
                 <ProtectedRoute username={user.username} path={'/pdfs'} defined={<DocumentSpace username={user.username}/>}
                                 notDefined={<Redirect to={'/'}/>}/>
-                <ProtectedRoute username={user.username} path={'/pdf'} defined={<DocumentViewer username={user.username}/>}
+                <ProtectedRoute username={user.username} path={'/pdf/:id'} defined={<DocumentViewer username={user.username}/>}
                                 notDefined={<Redirect to={'/'}/>}/>
             </Router>
         </MuiThemeProvider>

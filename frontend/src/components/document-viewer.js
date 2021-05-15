@@ -1,8 +1,8 @@
-import {Button, Dialog, IconButton, TextField} from "@material-ui/core";
+import {Button, CircularProgress, Dialog, IconButton, TextField} from "@material-ui/core";
 import {PDFViewer} from "./pdf-viewer";
 import {useEffect, useState} from "react";
 import {endpoints} from "../network/endpoints";
-import {CommentMinimizedDisplay} from "./comment-display";
+import {CommentDisplay, CommentMinimizedDisplay} from "./comment-display";
 import {InfoOutlined, SettingsOutlined} from "@material-ui/icons";
 import {blue} from "@material-ui/core/colors";
 import {useHistory} from "react-router-dom";
@@ -127,15 +127,56 @@ export function DocumentViewer({username}) {
             setFilteredHighlights(old => [...old, highlight]);
         })
     };
+    const onUpvoteHighlight = shouldUpvote => {
+        endpoints.upvoteHighlight(selectedHighlight.id, !shouldUpvote).then(h => {
+            setValues(old => {
+                const newValues = {...old};
+                newValues.highlights = [...newValues.highlights];
+                let i = 0;
+                let isFound = false;
+                for (; i < newValues.highlights.length; i += 1) {
+                    if (newValues.highlights[i].id === h.id) {
+                        isFound = true;
+                        break;
+                    }
+                }
+                if (isFound) {
+                    newValues.highlights[i] = h;
+                }
+                return newValues
+            })
+            setFilteredHighlights(old => {
+                const newValues = [...old];
+                let i = 0;
+                let isFound = false;
+                for (; i < newValues.highlights.length; i += 1) {
+                    if (newValues.highlights[i].id === h.id) {
+                        isFound = true;
+                        break;
+                    }
+                }
+                if (isFound) {
+                    newValues.highlights[i] = h;
+                }
+                return newValues
+            })
+            setSelectedHighlight(h)
+        })
+    }
+    const onUpdateDocument = setDocument
     useEffect(() => {
         if (!document) {
             return
         }
+        console.log('selectedDocument', document)
         endpoints.getAllHighlights(document.id, username).then(val => {
+            setSelectedHighlight(null)
             setValues(val);
-            setFilteredHighlights(val.highlights)
+            setFilteredHighlights(val.highlights);
+
         })
     }, [document])
+    console.log(filteredHighlights)
     return (
         <div style={{width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column'}}>
             <AppHeader username={username} document={document} onUpdateDocument={setDocument}/>
@@ -150,7 +191,7 @@ export function DocumentViewer({username}) {
                         }}>
                             <div style={{padding: 10, background: '#e1dfdd'}}>
                                 <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-                                    <h1 style={{fontSize: 25, fontWeight: 500, margin: 0}}>Highlights</h1>
+                                    <h1 style={{fontSize: 25, fontWeight: 400, margin: 0}}>Highlights</h1>
                                     <IconButton style={{marginLeft: 'auto'}}
                                                 onClick={() => setIsSettingOpen(s => !s)}><SettingsOutlined
                                         style={{color: 'black'}}/></IconButton>
@@ -159,6 +200,9 @@ export function DocumentViewer({username}) {
                             <div style={{padding: 10}}>
                                 {filteredHighlights.map(h => {
                                     const comment = values.comments[h.commentId]
+                                    if (!comment) {
+                                        return null
+                                    }
                                     return (
                                         <CommentMinimizedDisplay
                                             key={h.id}
@@ -170,11 +214,24 @@ export function DocumentViewer({username}) {
                                     )
                                 })}
                             </div>
-
+                            {selectedHighlight && (
+                                <Dialog open={selectedHighlight != null} onClose={() => setSelectedHighlight(null)}>
+                                    <CommentDisplay
+                                        allComments={values.comments}
+                                        allLinkedInternalDocs={values.linkedDocuments}
+                                        allLinkedExternalDocs={values.linkedExternalResources}
+                                        highlight={selectedHighlight}
+                                        onUpdateDocument={onUpdateDocument}
+                                        onClickUpvote={onUpvoteHighlight}
+                                    />
+                                </Dialog>
+                            )}
                         </div>
                     </>
                 ) : (
-                    <div>Loading</div>
+                    <div style={{display: 'flex', justifyContent: "center", alignItems: "center"}}>
+                        <CircularProgress />
+                    </div>
                 )}
             </div>
         </div>
