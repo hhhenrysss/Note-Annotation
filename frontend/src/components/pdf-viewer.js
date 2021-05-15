@@ -47,6 +47,7 @@ export function PDFViewer({url, highlights, onAddHighlight, username, existingDo
                                 }}
                                 username={username}
                                 existingDocInfo={existingDocInfo}
+                                hasTitle={true}
                             />
                         )}
                         highlightTransform={(

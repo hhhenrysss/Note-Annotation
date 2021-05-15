@@ -1,9 +1,10 @@
 import {markdownConverter} from "../utils/markdown";
 import {useState} from "react";
-import {ThumbUp, ThumbUpOutlined} from "@material-ui/icons";
+import {Add, Close, ThumbUp, ThumbUpOutlined} from "@material-ui/icons";
 import {Chip, IconButton} from "@material-ui/core";
 import {useHistory} from "react-router-dom";
 import {getHexGradient} from "../utils/color";
+import {CommentTip} from "./comment-tip";
 
 export function CommentMinimizedDisplay({title, username, content, onClick}) {
     return (
@@ -74,20 +75,21 @@ function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs,
 }
 
 
-export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExternalDocs, allComments, onClickUpvote, onUpdateDocument}) {
+
+export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExternalDocs, allComments, onClickUpvote, onUpdateDocument, existingDocInfo, currentUsername, onAddComment}) {
     const [isUpvoted, setIsUpvoted] = useState(false)
+    const [clickedReply, setClickedReply] = useState(null)
     const history = useHistory();
     const selectedComment = allComments[highlight.commentId]
     console.log('selectedComment', selectedComment)
-
     const onThumbsUp = () => {
         setIsUpvoted(!isUpvoted);
         onClickUpvote(!isUpvoted);
     }
     const chips = generateDocumentChips(selectedComment, allLinkedInternalDocs, allLinkedExternalDocs, history, onUpdateDocument)
     return (
-        <div style={{display: 'flex'}}>
-            <div style={{display: 'flex', flexDirection: 'column', padding: 15}}>
+        <div style={{display: 'flex', maxWidth: clickedReply ? 'initial' : '600px', background: "transparent"}}>
+            <div style={{display: 'flex', flexDirection: 'column', padding: 15, background: 'white', borderRadius: '4px'}}>
                 <section>
                     <div style={{display: 'flex', alignItems: "center"}}>
                         <h2 style={{fontWeight: 500, fontSize: 20, margin: 0}}>Highlight</h2>
@@ -114,7 +116,11 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
                     </div>
                 </section>
                 <section>
-                    <h2 style={{fontWeight: 500, fontSize: 20}}>Discussion</h2>
+                    <div style={{display: 'flex', alignItems: "center"}}>
+                        <h2 style={{fontWeight: 500, fontSize: 20}}>Discussion</h2>
+                        <IconButton style={{marginLeft: 'auto'}} onClick={() => setClickedReply(selectedComment.id)}><Add/></IconButton>
+                    </div>
+
                     {selectedComment.replies.length > 0 && (
                         <>
                             {selectedComment.replies.map(replyId => (
@@ -132,7 +138,21 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
                     )}
                 </section>
             </div>
+            {clickedReply && (
+                <div style={{marginLeft: 20, borderRadius: '4px', overflow: 'hidden'}}>
+                    <CommentTip
+                        hasTitle={false}
+                        existingDocInfo={existingDocInfo}
+                        username={currentUsername}
+                        onAdd={data => {
+                            onAddComment(data, clickedReply)
+                            setClickedReply(false)
+                        }}
+                        onClose={() => setClickedReply(null)}
+                    />
 
+                </div>
+            )}
         </div>
     )
 }

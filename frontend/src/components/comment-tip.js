@@ -1,4 +1,14 @@
-import {Button, TextField, FormControl, RadioGroup, FormControlLabel, FormLabel, Radio, Chip} from "@material-ui/core";
+import {
+    Button,
+    TextField,
+    FormControl,
+    RadioGroup,
+    FormControlLabel,
+    FormLabel,
+    Radio,
+    Chip,
+    IconButton
+} from "@material-ui/core";
 
 import ReactMde from "react-mde";
 import {useState} from "react";
@@ -7,6 +17,7 @@ import "react-mde/lib/styles/css/react-mde-all.css";
 import {markdownConverter} from "../utils/markdown";
 import Autosuggest from 'react-autosuggest';
 import { v4 as uuidv4 } from 'uuid';
+import {Close} from "@material-ui/icons";
 
 function InternalLinkAdd({onSelect, existingDocInfo}) {
     const [value, setValue] = useState('');
@@ -82,7 +93,7 @@ function LinkAdd({onAdd, onDelete, links, existingDocInfo, username}) {
 }
 
 
-export function CommentTip({onAdd, onOpen, username, existingDocInfo}) {
+export function CommentTip({onAdd, onOpen, username, existingDocInfo, hasTitle, onClose}) {
     const [content, setContent] = useState('');
     const [editorTab, setEditorTab] = useState('write');
     const [title, setTitle] = useState('');
@@ -114,10 +125,15 @@ export function CommentTip({onAdd, onOpen, username, existingDocInfo}) {
             <div style={{padding: '10px 0', display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
                 <h3 style={{fontWeight: 500, margin: 0}}>New comments</h3>
                 <Button style={{marginLeft: 'auto'}} onClick={onAddComment}>Post</Button>
+                {onClose && (
+                    <IconButton onClick={onClose}><Close/></IconButton>
+                )}
             </div>
             <form>
-                <TextField style={{marginBottom: 10}} fullWidth label={'Title'} value={title} onChange={e => setTitle(e.target.value)}/>
-                <div style={{width: 500, backdropFilter: 'blur(10px)', marginBottom: 20}}>
+                {hasTitle && (
+                    <TextField style={{marginBottom: 10}} fullWidth label={'Title'} value={title} onChange={e => setTitle(e.target.value)}/>
+                )}
+                <div style={{maxWidth: 500, marginBottom: 20}}>
                     <ReactMde
                         value={content}
                         onChange={setContent}

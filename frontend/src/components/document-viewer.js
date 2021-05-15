@@ -79,7 +79,7 @@ export function DocumentViewer({username}) {
     const [highlightsFilter, setHighlightsFilter] = useState({author: '', role: '', currentUser: true})
     const [selectedHighlight, setSelectedHighlight] = useState(null);
     const addHighlight = combined => {
-        console.log('combined', combined)
+        console.log('combined-addHighlight', combined)
         const time = Date.now()
         const comment = {
             id: `comment-${uuidv4().toString()}`,
@@ -164,6 +164,44 @@ export function DocumentViewer({username}) {
         })
     }
     const onUpdateDocument = setDocument
+    const onAddComment = (combined, targetId) => {
+        console.log('combined-addComment', combined)
+        const time = Date.now()
+        const comment = {
+            id: `comment-${uuidv4().toString()}`,
+            content: combined.content,
+            title: combined.title,
+            access: combined.access,
+            replies: [],
+            author: username,
+            linkedDocuments: combined.links.map(l => l.id)
+        }
+        const externalLinks = [];
+        for (const link of combined.links) {
+            if (link.isExternal) {
+                externalLinks.push({
+                    url: link.data.url,
+                    name: link.name,
+                    creationDate: time,
+                    author: username,
+                    id: link.id,
+                    lastUpdatedDate: time
+                })
+            }
+        }
+        endpoints.addComment(targetId, comment, externalLinks).then(({comment, externalDocs}) => {
+            setValues(old => {
+                const newValue = {...old};
+                newValue.comments = {...newValue.comments, [comment.id]: comment}
+                newValue.comments[targetId].replies.push(comment.id)
+                newValue.linkedExternalResources = {...newValue.linkedExternalResources};
+                for (const d of externalDocs) {
+                    newValue.linkedExternalResources[d.id] = d
+                }
+                return newValue
+            })
+        })
+    }
     useEffect(() => {
         if (!document) {
             return
@@ -215,7 +253,7 @@ export function DocumentViewer({username}) {
                                 })}
                             </div>
                             {selectedHighlight && (
-                                <Dialog open={selectedHighlight != null} onClose={() => setSelectedHighlight(null)}>
+                                <Dialog PaperProps={{style: {background: "transparent"}}} maxWidth={false} open={selectedHighlight != null} onClose={() => setSelectedHighlight(null)}>
                                     <CommentDisplay
                                         allComments={values.comments}
                                         allLinkedInternalDocs={values.linkedDocuments}
@@ -223,6 +261,9 @@ export function DocumentViewer({username}) {
                                         highlight={selectedHighlight}
                                         onUpdateDocument={onUpdateDocument}
                                         onClickUpvote={onUpvoteHighlight}
+                                        existingDocInfo={existingDocInfo}
+                                        currentUsername={username}
+                                        onAddComment={onAddComment}
                                     />
                                 </Dialog>
                             )}
