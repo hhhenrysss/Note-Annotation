@@ -32,7 +32,7 @@ function AppHeader({username, document, onUpdateDocument}) {
                     background: blue['700'],
                     height: '100%',
                     borderRadius: 0
-                }}>{username}</Button>
+                }} onClick={() => window.location.reload()}>{username}</Button>
             </div>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DocumentInfo info={document} onUpdateInfo={onUpdateDocument}/>

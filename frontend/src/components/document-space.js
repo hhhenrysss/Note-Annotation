@@ -67,7 +67,7 @@ function AppHeader({username, onAddDocument}) {
             <div style={{background: 'black', width: '100%', display: 'flex', alignItems: 'center', height: 48}}>
                 <h2 style={{color: 'white', fontSize: 18, padding: '5px 15px', margin: 0, fontWeight: 500}}>All Documents</h2>
                 <IconButton style={{marginLeft: 'auto'}} onClick={() => setIsDialogOpen(true)}><AddOutlined style={{color: 'white'}}/></IconButton>
-                <Button style={{ color: '#fff1ff', textTransform: 'none', background: blue['700'], height: '100%', borderRadius: 0}}>{username}</Button>
+                <Button onClick={() => window.location.reload()} style={{ color: '#fff1ff', textTransform: 'none', background: blue['700'], height: '100%', borderRadius: 0}}>{username}</Button>
             </div>
             <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DocumentAdd onAdd={onAdd} username={username}/>
