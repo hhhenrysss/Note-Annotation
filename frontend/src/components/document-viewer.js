@@ -1,4 +1,12 @@
-import {Button, CircularProgress, Dialog, IconButton, TextField} from "@material-ui/core";
+import {
+    Button,
+    CircularProgress,
+    Dialog,
+    FormControl,
+    FormControlLabel, FormLabel,
+    IconButton, MenuItem, Radio, RadioGroup, Select, Switch,
+    TextField
+} from "@material-ui/core";
 import {PDFViewer} from "./pdf-viewer";
 import {useEffect, useState} from "react";
 import {endpoints} from "../network/endpoints";
@@ -70,13 +78,37 @@ function DocumentInfo({info, onUpdateInfo}) {
     )
 }
 
+const filterMode = Object.freeze({
+    self: 'self',
+    student: 'student',
+    instructor: 'instructor'
+})
+
+function generateSelection(mode, highlights, users) {
+    if (mode === filterMode.self) {
+        return [highlights, []];
+    }
+    const filteredHighlights = []
+    const filteredUsers = []
+    for (const highlight of highlights) {
+        const username = highlight.author
+        if (username in users) {
+            const user = users[username]
+            if ((mode === filterMode.student && user.role === 'student') || (mode === filterMode.instructor && user.role === 'instructor')) {
+                filteredHighlights.push(highlight)
+                filteredUsers.push(filteredUsers)
+            }
+        }
+    }
+    return [filteredHighlights, filteredUsers]
+}
+
 export function DocumentViewer({username}) {
     const {selectedDoc, existingDocInfo} = useHistory().location.state
     const [document, setDocument] = useState(selectedDoc);
     const [values, setValues] = useState({});
-    const [filteredHighlights, setFilteredHighlights] = useState([]);
     const [isSettingOpen, setIsSettingOpen] = useState(false);
-    const [highlightsFilter, setHighlightsFilter] = useState({author: '', role: '', currentUser: true})
+    const [highlightsFilter, setHighlightsFilter] = useState({author: '', mode: filterMode.self})
     const [selectedHighlight, setSelectedHighlight] = useState(null);
     const addHighlight = combined => {
         console.log('combined-addHighlight', combined)
@@ -124,7 +156,6 @@ export function DocumentViewer({username}) {
                 }
                 return newValue
             })
-            setFilteredHighlights(old => [...old, highlight]);
         })
     };
     const onUpvoteHighlight = shouldUpvote => {
@@ -132,21 +163,6 @@ export function DocumentViewer({username}) {
             setValues(old => {
                 const newValues = {...old};
                 newValues.highlights = [...newValues.highlights];
-                let i = 0;
-                let isFound = false;
-                for (; i < newValues.highlights.length; i += 1) {
-                    if (newValues.highlights[i].id === h.id) {
-                        isFound = true;
-                        break;
-                    }
-                }
-                if (isFound) {
-                    newValues.highlights[i] = h;
-                }
-                return newValues
-            })
-            setFilteredHighlights(old => {
-                const newValues = [...old];
                 let i = 0;
                 let isFound = false;
                 for (; i < newValues.highlights.length; i += 1) {
@@ -210,10 +226,13 @@ export function DocumentViewer({username}) {
         endpoints.getAllHighlights(document.id, username).then(val => {
             setSelectedHighlight(null)
             setValues(val);
-            setFilteredHighlights(val.highlights);
         })
     }, [document])
-    console.log(values)
+    const [filteredHighlights, filteredUsers] = values.highlights ?
+        generateSelection(highlightsFilter.mode, values.highlights, values.users) : [[], []]
+    if (highlightsFilter.mode !== filterMode.self && highlightsFilter.author === '') {
+        filteredHighlights.length = 0
+    }
     return (
         <div style={{width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column'}}>
             <AppHeader username={username} document={document} onUpdateDocument={setDocument}/>
@@ -233,6 +252,26 @@ export function DocumentViewer({username}) {
                                                 onClick={() => setIsSettingOpen(s => !s)}><SettingsOutlined
                                         style={{color: 'black'}}/></IconButton>
                                 </div>
+                                {isSettingOpen && (
+                                    <div style={{marginTop: 15}}>
+                                        <FormControl component="fieldset">
+                                            <FormLabel component="legend">Filter Highlights by Type</FormLabel>
+                                            <RadioGroup row={true} defaultValue={filterMode.self} aria-label="Filter Type" name="Filter Type" onChange={e => setHighlightsFilter({author: '', mode: e.target.value})}>
+                                                <FormControlLabel value={filterMode.self} control={<Radio />} label={<div style={{fontSize: 12}}>{username}</div>} />
+                                                <FormControlLabel value={filterMode.student} control={<Radio />} label={<div style={{fontSize: 12}}>Students</div>} />
+                                                <FormControlLabel value={filterMode.instructor} control={<Radio />} label={<div style={{fontSize: 12}}>Instructors</div>} />
+                                            </RadioGroup>
+                                        </FormControl>
+                                        {highlightsFilter.mode !== filterMode.self && (
+                                            <Select fullWidth value={highlightsFilter.author} onChange={e => setHighlightsFilter(old => ({...old, author: e.target.value}))}>
+                                                <MenuItem value=''>None</MenuItem>
+                                                {filteredUsers.map(u => (
+                                                    <MenuItem value={u.username}>{u.username}</MenuItem>
+                                                ))}
+                                            </Select>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             <div style={{padding: 10}}>
                                 {filteredHighlights.map(h => {

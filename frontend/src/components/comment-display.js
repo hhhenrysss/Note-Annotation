@@ -18,6 +18,9 @@ export function CommentMinimizedDisplay({title, username, content, onClick}) {
 
 function generateDocumentChips(comment, allLinkedInternalDocs, allLinkedExternalDocs, history, onUpdateDocument) {
     const chips = []
+    if (!comment) {
+        return []
+    }
     for (const docId of comment.linkedDocuments) {
         if (docId in allLinkedInternalDocs) {
             const doc = allLinkedInternalDocs[docId]
@@ -48,7 +51,9 @@ function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs,
     const history = useHistory();
     const comment = allComments[commentId]
     const chips = generateDocumentChips(comment, allLinkedInternalDocs, allLinkedExternalDocs, history, onUpdateDocument)
-    console.log('nestingLevel', nestingLevel)
+    if (!comment) {
+        return <></>
+    }
     return (
         <div>
             <div className={'hover-card'} style={{padding: 10, borderBottom: '1px solid lightgray', cursor: 'pointer'}} onClick={() => onClick(commentId)}>
