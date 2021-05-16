@@ -211,10 +211,9 @@ export function DocumentViewer({username}) {
             setSelectedHighlight(null)
             setValues(val);
             setFilteredHighlights(val.highlights);
-
         })
     }, [document])
-    console.log(filteredHighlights)
+    console.log(values)
     return (
         <div style={{width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column'}}>
             <AppHeader username={username} document={document} onUpdateDocument={setDocument}/>
@@ -253,7 +252,7 @@ export function DocumentViewer({username}) {
                                 })}
                             </div>
                             {selectedHighlight && (
-                                <Dialog PaperProps={{style: {background: "transparent"}}} maxWidth={false} open={selectedHighlight != null} onClose={() => setSelectedHighlight(null)}>
+                                <Dialog PaperProps={{style: {background: "transparent", maxHeight: '70vh'}}} maxWidth={false} open={selectedHighlight != null} onClose={() => setSelectedHighlight(null)}>
                                     <CommentDisplay
                                         allComments={values.comments}
                                         allLinkedInternalDocs={values.linkedDocuments}

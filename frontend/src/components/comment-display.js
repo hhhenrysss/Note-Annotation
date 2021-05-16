@@ -44,19 +44,22 @@ function generateDocumentChips(comment, allLinkedInternalDocs, allLinkedExternal
     return chips
 }
 
-function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs, allComments, nestingLevel, onUpdateDocument}) {
+function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs, allComments, nestingLevel, onUpdateDocument, onClick}) {
     const history = useHistory();
     const comment = allComments[commentId]
     const chips = generateDocumentChips(comment, allLinkedInternalDocs, allLinkedExternalDocs, history, onUpdateDocument)
+    console.log('nestingLevel', nestingLevel)
     return (
         <div>
-            <p style={{margin: 0, marginBottom: 10}}><strong>{comment.author}</strong></p>
-            <p style={{margin: 0, marginBottom: 10}}>{comment.content}</p>
-            <div style={{display: 'flex', flexWrap: "wrap", gap: 10}}>
-                {chips}
+            <div className={'hover-card'} style={{padding: 10, borderBottom: '1px solid lightgray', cursor: 'pointer'}} onClick={() => onClick(commentId)}>
+                <p style={{margin: 0, marginBottom: 10, fontWeight: 500, fontSize: 12}}>{comment.author}</p>
+                <p style={{margin: 0, marginBottom: 10, fontSize: 12}}>{comment.content}</p>
+                <div style={{display: 'flex', flexWrap: "wrap", gap: 10}}>
+                    {chips}
+                </div>
             </div>
             {comment.replies.length > 0 && (
-                <div style={{marginLeft: nestingLevel * 15, borderLeft: `1px solid ${getHexGradient('#ffffff', '#1976d2', (nestingLevel + 1)/10)}`}}>
+                <div style={{marginLeft: (nestingLevel + 1) * 15, borderLeft: `2px solid ${getHexGradient('#ffffff', '#1976d2', (nestingLevel + 1)/10)}`}}>
                     {comment.replies.map(replyId => (
                         <NestedReplies
                             key={replyId}
@@ -66,6 +69,7 @@ function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs,
                             allLinkedExternalDocs={allLinkedExternalDocs}
                             allLinkedInternalDocs={allLinkedInternalDocs}
                             onUpdateDocument={onUpdateDocument}
+                            onClick={onClick}
                         />
                     ))}
                 </div>
@@ -88,58 +92,61 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
     }
     const chips = generateDocumentChips(selectedComment, allLinkedInternalDocs, allLinkedExternalDocs, history, onUpdateDocument)
     return (
-        <div style={{display: 'flex', maxWidth: clickedReply ? 'initial' : '600px', background: "transparent"}}>
-            <div style={{display: 'flex', flexDirection: 'column', padding: 15, background: 'white', borderRadius: '4px'}}>
-                <section>
-                    <div style={{display: 'flex', alignItems: "center"}}>
-                        <h2 style={{fontWeight: 500, fontSize: 20, margin: 0}}>Highlight</h2>
-                        {(highlight.access === 'private' || selectedComment.access === 'private') && (
-                            <p style={{margin: 0, marginLeft: 15, color: 'gray', fontSize: 12}}>private</p>
-                        )}
-                        <IconButton style={{marginLeft: 'auto'}} onClick={onThumbsUp}>
-                            {isUpvoted ? <ThumbUp/> : <ThumbUpOutlined/>}
-                        </IconButton>
-                    </div>
-                    <p style={{margin: '5px 0'}}><span style={{fontSize: 14}}>{highlight.author}</span></p>
-                    <blockquote style={{margin: 0, padding: 5, background: '#f3f2f1', borderLeft: '2px solid darkgray'}}>
-                        <code style={{fontSize: 12}}>{highlight.selectedText.text}</code>
-                    </blockquote>
-                    <div>
-                        <h3 style={{fontWeight: 500, fontSize: 14, margin: 0, padding: '5px 0', marginTop: 10, background: '#ffff00', display: 'inline-block'}}>{selectedComment.title}</h3>
-                        <p style={{margin: 0, fontSize: 12}} dangerouslySetInnerHTML={{__html: markdownConverter.makeHtml(selectedComment.content)}}/>
-                    </div>
-                </section>
-                <section>
-                    <h2 style={{fontWeight: 500, fontSize: 20}}>Linked Documents</h2>
-                    <div style={{display: 'flex', flexWrap: "wrap", gap: 10}}>
-                        {chips}
-                    </div>
-                </section>
-                <section>
-                    <div style={{display: 'flex', alignItems: "center"}}>
-                        <h2 style={{fontWeight: 500, fontSize: 20}}>Discussion</h2>
-                        <IconButton style={{marginLeft: 'auto'}} onClick={() => setClickedReply(selectedComment.id)}><Add/></IconButton>
-                    </div>
+        <div style={{overflowY: 'hidden', height: '100%', display: 'flex', maxWidth: clickedReply ? 'initial' : '600px', background: "transparent"}}>
+            <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column', background: 'white', borderRadius: '4px', overflowY: 'auto'}}>
+                <div style={{display: 'flex', flexDirection: 'column', padding: 15}}>
+                    <section>
+                        <div style={{display: 'flex', alignItems: "center"}}>
+                            <h2 style={{fontWeight: 500, fontSize: 20, margin: 0}}>Highlight</h2>
+                            {(highlight.access === 'private' || selectedComment.access === 'private') && (
+                                <p style={{margin: 0, marginLeft: 15, color: 'gray', fontSize: 12}}>private</p>
+                            )}
+                            <IconButton style={{marginLeft: 'auto'}} onClick={onThumbsUp}>
+                                {isUpvoted ? <ThumbUp/> : <ThumbUpOutlined/>}
+                            </IconButton>
+                        </div>
+                        <p style={{margin: '5px 0'}}><span style={{fontSize: 14}}>{highlight.author}</span></p>
+                        <blockquote style={{margin: 0, padding: 5, background: '#f3f2f1', borderLeft: '2px solid darkgray'}}>
+                            <code style={{fontSize: 12}}>{highlight.selectedText.text}</code>
+                        </blockquote>
+                        <div>
+                            <h3 style={{fontWeight: 500, fontSize: 14, margin: 0, padding: '5px 0', marginTop: 10, background: '#ffff00', display: 'inline-block'}}>{selectedComment.title}</h3>
+                            <p style={{margin: 0, fontSize: 12}} dangerouslySetInnerHTML={{__html: markdownConverter.makeHtml(selectedComment.content)}}/>
+                        </div>
+                    </section>
+                    <section>
+                        <h2 style={{fontWeight: 500, fontSize: 20}}>Linked Documents</h2>
+                        <div style={{display: 'flex', flexWrap: "wrap", gap: 10}}>
+                            {chips}
+                        </div>
+                    </section>
+                    <section>
+                        <div style={{display: 'flex', alignItems: "center"}}>
+                            <h2 style={{fontWeight: 500, fontSize: 20}}>Discussion</h2>
+                            <IconButton style={{marginLeft: 'auto'}} onClick={() => setClickedReply(selectedComment.id)}><Add/></IconButton>
+                        </div>
 
-                    {selectedComment.replies.length > 0 && (
-                        <>
-                            {selectedComment.replies.map(replyId => (
-                                <NestedReplies
-                                    key={replyId}
-                                    commentId={replyId}
-                                    nestingLevel={0}
-                                    allComments={allComments}
-                                    allLinkedExternalDocs={allLinkedExternalDocs}
-                                    allLinkedInternalDocs={allLinkedInternalDocs}
-                                    onUpdateDocument={onUpdateDocument}
-                                />
-                            ))}
-                        </>
-                    )}
-                </section>
+                        {selectedComment.replies.length > 0 && (
+                            <>
+                                {selectedComment.replies.map(replyId => (
+                                    <NestedReplies
+                                        key={replyId}
+                                        commentId={replyId}
+                                        nestingLevel={0}
+                                        allComments={allComments}
+                                        allLinkedExternalDocs={allLinkedExternalDocs}
+                                        allLinkedInternalDocs={allLinkedInternalDocs}
+                                        onUpdateDocument={onUpdateDocument}
+                                        onClick={setClickedReply}
+                                    />
+                                ))}
+                            </>
+                        )}
+                    </section>
+                </div>
             </div>
             {clickedReply && (
-                <div style={{marginLeft: 20, borderRadius: '4px', overflow: 'hidden'}}>
+                <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column', marginLeft: 20, borderRadius: '4px', overflowY: 'auto'}}>
                     <CommentTip
                         hasTitle={false}
                         existingDocInfo={existingDocInfo}
@@ -150,7 +157,6 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
                         }}
                         onClose={() => setClickedReply(null)}
                     />
-
                 </div>
             )}
         </div>
