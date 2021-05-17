@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "cd backend && npm install && node app.js",
-    "build": "cd frontend && npm install && npm run build"
+    "build": "cd backend && npm install && node app.js"
   },
   "cacheDirectories": [
     "backend/node_modules",
