@@ -85,23 +85,23 @@ const filterMode = Object.freeze({
     instructor: 'instructor'
 })
 
-function generateSelection(mode, highlights, users) {
+function generateSelection(mode, highlights, users, currengUsername) {
     if (mode === filterMode.self) {
-        return [highlights, []];
+        return [highlights.filter(h => h.author === currengUsername), []];
     }
     const filteredHighlights = []
-    const filteredUsers = []
+    const filteredUsers = new Set()
     for (const highlight of highlights) {
         const username = highlight.author
         if (username in users) {
-            const user = users[username]
-            if ((mode === filterMode.student && user.role === 'student') || (mode === filterMode.instructor && user.role === 'instructor')) {
+            const role = users[username]
+            if ((mode === filterMode.student && role === 'student') || (mode === filterMode.instructor && role === 'instructor')) {
                 filteredHighlights.push(highlight)
-                filteredUsers.push(filteredUsers)
+                filteredUsers.add(username)
             }
         }
     }
-    return [filteredHighlights, filteredUsers]
+    return [filteredHighlights, [...filteredUsers]]
 }
 
 export function DocumentViewer({username}) {
@@ -238,7 +238,7 @@ export function DocumentViewer({username}) {
         })
     }, [document])
     const [filteredHighlights, filteredUsers] = values.highlights ?
-        generateSelection(highlightsFilter.mode, values.highlights, values.users) : [[], []]
+        generateSelection(highlightsFilter.mode, values.highlights, values.users, username) : [[], []]
     if (highlightsFilter.mode !== filterMode.self && highlightsFilter.author === '') {
         filteredHighlights.length = 0
     }
@@ -275,7 +275,7 @@ export function DocumentViewer({username}) {
                                             <Select fullWidth value={highlightsFilter.author} onChange={e => setHighlightsFilter(old => ({...old, author: e.target.value}))}>
                                                 <MenuItem value=''>None</MenuItem>
                                                 {filteredUsers.map(u => (
-                                                    <MenuItem value={u.username}>{u.username}</MenuItem>
+                                                    <MenuItem value={u}>{u}</MenuItem>
                                                 ))}
                                             </Select>
                                         )}
