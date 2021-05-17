@@ -10,7 +10,7 @@ import {
     RadioGroup,
     TextField
 } from "@material-ui/core";
-import {blue} from "@material-ui/core/colors";
+import {blue, red} from "@material-ui/core/colors";
 import {endpoints} from "../network/endpoints";
 import {useHistory} from 'react-router-dom';
 import {AddOutlined} from "@material-ui/icons";
@@ -76,7 +76,7 @@ function AppHeader({username, onAddDocument}) {
     )
 }
 
-function DocumentCard({info, existingDocInfo}) {
+function DocumentCard({info, existingDocInfo, onDelete}) {
     const history = useHistory();
     const onNavigate = () => {
         history.push(`/pdf/${info.id}`, {selectedDoc: info, existingDocInfo})
@@ -89,12 +89,15 @@ function DocumentCard({info, existingDocInfo}) {
             </CardContent>
             <CardActions>
                 <Button onClick={onNavigate}>View Document</Button>
+                {onDelete && (
+                    <Button onClick={onDelete} style={{color: red['500'], marginLeft: 'auto'}}>Delete</Button>
+                )}
             </CardActions>
         </Card>
     )
 }
 
-export function DocumentSpace({username}) {
+export function DocumentSpace({username, userRole}) {
     const [documents, setDocuments] = useState([]);
     useEffect(() => {
         endpoints.getDocuments(username).then(setDocuments);
@@ -102,11 +105,39 @@ export function DocumentSpace({username}) {
     const onAddDocument = doc => {
         endpoints.createDocument(doc).then(addedDoc => setDocuments(old => [...old, addedDoc]));
     }
+    const onDeleteDocument = id => {
+        endpoints.deleteDocument(id).then(() => setDocuments(old => {
+            const newDocs = [];
+            for (const d of old) {
+                if (d.id !== id) {
+                    newDocs.push(d);
+                }
+            }
+            return newDocs
+        }))
+    }
     return (
         <div style={{width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column'}}>
             <AppHeader username={username} onAddDocument={onAddDocument}/>
             <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridGap: 15, padding: 15}}>
-                {documents.map(d => <DocumentCard key={d.id} info={d} existingDocInfo={documents.map(({name, id}) => ({name, id}))}/>)}
+                {documents.map(d => {
+                    let shouldEnableDelete = false;
+                    if (userRole === 'student') {
+                        if (d.author === username) {
+                            shouldEnableDelete = true;
+                        }
+                    } else {
+                        shouldEnableDelete = true;
+                    }
+                    return (
+                        <DocumentCard
+                            key={d.id}
+                            info={d}
+                            existingDocInfo={documents.map(({name, id}) => ({name, id}))}
+                            onDelete={shouldEnableDelete ? () => onDeleteDocument(d.id) : null}
+                        />
+                    )
+                })}
             </div>
         </div>
     )

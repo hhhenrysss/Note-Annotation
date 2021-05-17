@@ -19,10 +19,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 function AppHeader({username, document, onUpdateDocument}) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const history = useHistory();
     return (
         <>
             <div style={{background: 'black', width: '100%', display: 'flex', alignItems: 'center'}}>
-                <h2 style={{color: 'white', fontSize: 18, padding: '5px 15px', margin: 0, fontWeight: 500}}>Document
+                <h2 onClick={() => history.push('/pdfs')} style={{color: 'white', fontSize: 18, padding: '5px 15px', margin: 0, fontWeight: 500, cursor: "pointer"}}>Document
                     View</h2>
                 <IconButton style={{marginLeft: 'auto'}} onClick={() => setIsDialogOpen(true)}><InfoOutlined
                     style={{color: 'white'}}/></IconButton>

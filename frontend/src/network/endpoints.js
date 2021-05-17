@@ -30,6 +30,11 @@ async function createDocument(doc) {
     return strip(results);
 }
 
+async function deleteDocument(id) {
+    const results = await axios.post('/api/pdf/delete', {id});
+    return strip(results);
+}
+
 async function getAllHighlights(id, username) {
     const results = await axios.get('/api/highlights', {params: {id, username}});
     return strip(results)
@@ -51,4 +56,4 @@ async function addComment(targetId, comment, externalDocs) {
 }
 
 export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights, createDocument,
-    addHighlight, upvoteHighlight, addComment}
+    addHighlight, upvoteHighlight, addComment, deleteDocument}

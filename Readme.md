@@ -1,5 +1,4 @@
 # TODO
--[ ] Backend data storage
--[ ] Linking documents
--[ ] Nested commenting
--[ ] Document browsing homepage
+-[ ] Fix upvotes
+-[ ] Delete comments
+-[ ] Instructor annotation

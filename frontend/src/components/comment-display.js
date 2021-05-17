@@ -109,6 +109,7 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
                             <IconButton style={{marginLeft: 'auto'}} onClick={onThumbsUp}>
                                 {isUpvoted ? <ThumbUp/> : <ThumbUpOutlined/>}
                             </IconButton>
+                            {highlight.upvotes > 0 && (<span>{highlight.upvotes}</span>)}
                         </div>
                         <p style={{margin: '5px 0'}}><span style={{fontSize: 14}}>{highlight.author}</span></p>
                         <blockquote style={{margin: 0, padding: 5, background: '#f3f2f1', borderLeft: '2px solid darkgray'}}>
