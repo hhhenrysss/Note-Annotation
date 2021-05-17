@@ -55,5 +55,10 @@ async function addComment(targetId, comment, externalDocs) {
     return strip(results);
 }
 
+async function deleteComment(id) {
+    const results = await axios.post('/api/comment/delete', {id});
+    return strip(results);
+}
+
 export const endpoints = {login, register, getDocuments, modifyDocument, getAllHighlights, createDocument,
-    addHighlight, upvoteHighlight, addComment, deleteDocument}
+    addHighlight, upvoteHighlight, addComment, deleteDocument, deleteComment}

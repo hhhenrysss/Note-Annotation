@@ -219,6 +219,14 @@ export function DocumentViewer({username}) {
             })
         })
     }
+    const onDeleteComment = id => {
+        endpoints.deleteComment(id).then(() => setValues(old => {
+            const newValues = {...old};
+            newValues.comments = {...newValues.comments}
+            delete newValues.comments[id]
+            return newValues
+        }))
+    }
     useEffect(() => {
         if (!document) {
             return
@@ -297,12 +305,14 @@ export function DocumentViewer({username}) {
                                         allComments={values.comments}
                                         allLinkedInternalDocs={values.linkedDocuments}
                                         allLinkedExternalDocs={values.linkedExternalResources}
+                                        allUsers={values.users}
                                         highlight={selectedHighlight}
                                         onUpdateDocument={onUpdateDocument}
                                         onClickUpvote={onUpvoteHighlight}
                                         existingDocInfo={existingDocInfo}
                                         currentUsername={username}
                                         onAddComment={onAddComment}
+                                        onDelete={onDeleteComment}
                                     />
                                 </Dialog>
                             )}

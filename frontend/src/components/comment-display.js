@@ -1,10 +1,11 @@
 import {markdownConverter} from "../utils/markdown";
 import {useState} from "react";
 import {Add, Close, ThumbUp, ThumbUpOutlined} from "@material-ui/icons";
-import {Chip, IconButton} from "@material-ui/core";
+import {Button, Chip, IconButton} from "@material-ui/core";
 import {useHistory} from "react-router-dom";
 import {getHexGradient} from "../utils/color";
 import {CommentTip} from "./comment-tip";
+import {red} from "@material-ui/core/colors";
 
 export function CommentMinimizedDisplay({title, username, content, onClick}) {
     return (
@@ -47,17 +48,39 @@ function generateDocumentChips(comment, allLinkedInternalDocs, allLinkedExternal
     return chips
 }
 
-function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs, allComments, nestingLevel, onUpdateDocument, onClick}) {
+function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs, allComments, allUsers, nestingLevel, onUpdateDocument, onClick, onDelete, currentUsername}) {
     const history = useHistory();
     const comment = allComments[commentId]
     const chips = generateDocumentChips(comment, allLinkedInternalDocs, allLinkedExternalDocs, history, onUpdateDocument)
     if (!comment) {
         return <></>
     }
+    let shouldEnableDelete = false;
+    if (comment.author in allUsers) {
+        const authorRole = allUsers[comment.author]
+        if (authorRole === 'instructor' || comment.author === currentUsername) {
+            shouldEnableDelete = true;
+        }
+    }
+    const onClickDelete = e => {
+        e.stopPropagation()
+        onDelete(comment.id)
+    }
     return (
         <div>
             <div className={'hover-card'} style={{padding: 10, borderBottom: '1px solid lightgray', cursor: 'pointer'}} onClick={() => onClick(commentId)}>
-                <p style={{margin: 0, marginBottom: 10, fontWeight: 500, fontSize: 12}}>{comment.author}</p>
+                <div style={{display: "flex", alignItems: "center", marginBottom: 10}}>
+                    <p style={{margin: 0, fontWeight: 500, fontSize: 12}}>{comment.author}</p>
+                    {comment.author in allUsers && allUsers[comment.author] === 'instructor' && (
+                        <div style={{marginLeft: '10px'}}>
+                            <em style={{fontSize: 10, color: "gray"}}>Instructor</em>
+                        </div>
+                    )}
+
+                    {shouldEnableDelete && (
+                        <Button onClick={onClickDelete} style={{color: red['500'], marginLeft: "auto"}}>Delete</Button>
+                    )}
+                </div>
                 <p style={{margin: 0, marginBottom: 10, fontSize: 12}}>{comment.content}</p>
                 <div style={{display: 'flex', flexWrap: "wrap", gap: 10}}>
                     {chips}
@@ -73,8 +96,11 @@ function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs,
                             allComments={allComments}
                             allLinkedExternalDocs={allLinkedExternalDocs}
                             allLinkedInternalDocs={allLinkedInternalDocs}
+                            allUsers={allUsers}
                             onUpdateDocument={onUpdateDocument}
                             onClick={onClick}
+                            onDelete={onDelete}
+                            currentUsername={currentUsername}
                         />
                     ))}
                 </div>
@@ -85,7 +111,7 @@ function NestedReplies({commentId, allLinkedInternalDocs, allLinkedExternalDocs,
 
 
 
-export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExternalDocs, allComments, onClickUpvote, onUpdateDocument, existingDocInfo, currentUsername, onAddComment}) {
+export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExternalDocs, allComments, allUsers, onClickUpvote, onUpdateDocument, existingDocInfo, currentUsername, onAddComment, onDelete}) {
     const [isUpvoted, setIsUpvoted] = useState(false)
     const [clickedReply, setClickedReply] = useState(null)
     const history = useHistory();
@@ -95,9 +121,16 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
         setIsUpvoted(!isUpvoted);
         onClickUpvote(!isUpvoted);
     }
+    let shouldEnableDelete = false;
+    if (selectedComment && selectedComment.author in allUsers) {
+        const authorRole = allUsers[selectedComment.author]
+        if (authorRole === 'instructor' || selectedComment.author === currentUsername) {
+            shouldEnableDelete = true;
+        }
+    }
     const chips = generateDocumentChips(selectedComment, allLinkedInternalDocs, allLinkedExternalDocs, history, onUpdateDocument)
     return (
-        <div style={{overflowY: 'hidden', height: '100%', display: 'flex', maxWidth: clickedReply ? 'initial' : '600px', background: "transparent"}}>
+        <div style={{overflowY: 'hidden', height: '100%', display: 'flex', maxWidth: clickedReply ? 'initial' : '600px', minWidth: '500px', background: "transparent"}}>
             <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column', background: 'white', borderRadius: '4px', overflowY: 'auto'}}>
                 <div style={{display: 'flex', flexDirection: 'column', padding: 15}}>
                     <section>
@@ -110,8 +143,18 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
                                 {isUpvoted ? <ThumbUp/> : <ThumbUpOutlined/>}
                             </IconButton>
                             {highlight.upvotes > 0 && (<span>{highlight.upvotes}</span>)}
+                            {shouldEnableDelete && (
+                                <Button onClick={() => onDelete(selectedComment.id)} style={{color: red['500']}}>Delete</Button>
+                            )}
                         </div>
-                        <p style={{margin: '5px 0'}}><span style={{fontSize: 14}}>{highlight.author}</span></p>
+                        <div style={{display: "flex", alignItems: 'center'}}>
+                            <p style={{margin: '5px 0'}}><span style={{fontSize: 14}}>{highlight.author}</span></p>
+                            {selectedComment && selectedComment.author in allUsers && allUsers[selectedComment.author] === 'instructor' && (
+                                <div style={{marginLeft: '10px'}}>
+                                    <em style={{fontSize: 10, color: "gray"}}>Instructor</em>
+                                </div>
+                            )}
+                        </div>
                         <blockquote style={{margin: 0, padding: 5, background: '#f3f2f1', borderLeft: '2px solid darkgray'}}>
                             <code style={{fontSize: 12}}>{highlight.selectedText.text}</code>
                         </blockquote>
@@ -142,8 +185,11 @@ export function CommentDisplay({highlight, allLinkedInternalDocs, allLinkedExter
                                         allComments={allComments}
                                         allLinkedExternalDocs={allLinkedExternalDocs}
                                         allLinkedInternalDocs={allLinkedInternalDocs}
+                                        allUsers={allUsers}
                                         onUpdateDocument={onUpdateDocument}
                                         onClick={setClickedReply}
+                                        onDelete={onDelete}
+                                        currentUsername={currentUsername}
                                     />
                                 ))}
                             </>
